@@ -183,6 +183,15 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border/40 bg-background/60 py-6 text-center text-xs text-muted-foreground backdrop-blur-md">
+        <div className="flex items-center justify-center gap-4 mb-2">
+          <Link href="/privacy" className="hover:text-primary transition-colors underline-offset-4 hover:underline">
+            Privacy Policy
+          </Link>
+          <span>•</span>
+          <Link href="/terms" className="hover:text-primary transition-colors underline-offset-4 hover:underline">
+            Terms of Service
+          </Link>
+        </div>
         <p>© {new Date().getFullYear()} Muhurat AI. Powered by Google Gemini, Mastra AI & Descope.</p>
       </footer>
     </div>

@@ -95,6 +95,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { BackendWarmup } from "@/components/providers/backend-warmup";
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const projectId = process.env.NEXT_PUBLIC_DESCOPE_PROJECT_ID ?? "";
@@ -165,6 +166,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             enableSystem
             disableTransitionOnChange={false}
           >
+            <BackendWarmup />
             {children}
           </ThemeProvider>
         </body>

@@ -20,6 +20,10 @@ import {
   CalendarEvent,
   fetchCalendarEvents,
 } from "@/lib/calendar-api";
+import {
+  getSpecialDayForDate,
+  SpecialDay,
+} from "@/lib/festivals-data";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -40,6 +44,7 @@ export function CalendarView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedSpecialDay, setSelectedSpecialDay] = useState<SpecialDay | null>(null);
 
   // Calculate time bounds based on current view
   const { timeMin, timeMax } = useMemo(() => {
@@ -275,22 +280,34 @@ export function CalendarView({
               setViewMode("day");
             }}
             onSelectEvent={setSelectedEvent}
+            onSelectSpecialDay={setSelectedSpecialDay}
           />
         ) : viewMode === "week" ? (
           <WeekView
             currentDate={currentDate}
             events={events}
             onSelectEvent={setSelectedEvent}
+            onSelectSpecialDay={setSelectedSpecialDay}
           />
         ) : (
           <DayView
             currentDate={currentDate}
             events={events}
             onSelectEvent={setSelectedEvent}
+            onSelectSpecialDay={setSelectedSpecialDay}
             onAskAgent={onAskAgent}
           />
         )}
       </div>
+
+      {/* Special Day / Festival Details Modal */}
+      {selectedSpecialDay && (
+        <SpecialDayModal
+          specialDay={selectedSpecialDay}
+          onClose={() => setSelectedSpecialDay(null)}
+          onAskAgent={onAskAgent}
+        />
+      )}
 
       {/* Event Details Modal */}
       {selectedEvent && (
@@ -312,11 +329,13 @@ function MonthView({
   eventsByDate,
   onSelectDate,
   onSelectEvent,
+  onSelectSpecialDay,
 }: {
   currentDate: Date;
   eventsByDate: Map<string, CalendarEvent[]>;
   onSelectDate: (date: Date) => void;
   onSelectEvent: (event: CalendarEvent) => void;
+  onSelectSpecialDay: (specialDay: SpecialDay) => void;
 }) {
   const monthDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -381,6 +400,7 @@ function MonthView({
         {monthDays.map(({ date, isCurrentMonth, key }) => {
           const isToday = key === todayKey;
           const dayEvents = eventsByDate.get(key) || [];
+          const specialDay = getSpecialDayForDate(date);
 
           return (
             <div
@@ -407,8 +427,24 @@ function MonthView({
                 )}
               </div>
 
+              {/* Special Day / Festival Pill */}
+              {specialDay && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectSpecialDay(specialDay);
+                  }}
+                  className={`mb-1 w-full truncate rounded-md px-1.5 py-0.5 text-left text-[10px] font-semibold transition-all flex items-center gap-1 border shadow-xs hover:scale-[1.02] cursor-pointer ${specialDay.colorScheme.bg} ${specialDay.colorScheme.border} ${specialDay.colorScheme.text}`}
+                  title={`${specialDay.name} • ${specialDay.categoryLabel}`}
+                >
+                  <span className="shrink-0 text-xs">{specialDay.emoji}</span>
+                  <span className="truncate">{specialDay.name}</span>
+                </button>
+              )}
+
               {/* Event Pills */}
-              <div className="space-y-1 overflow-y-auto max-h-[85px] scrollbar-none">
+              <div className="space-y-1 overflow-y-auto max-h-[75px] scrollbar-none">
                 {dayEvents.slice(0, 3).map((event) => {
                   const hasMeet = Boolean(event.meetLink);
                   return (
@@ -451,10 +487,12 @@ function WeekView({
   currentDate,
   events,
   onSelectEvent,
+  onSelectSpecialDay,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
+  onSelectSpecialDay: (specialDay: SpecialDay) => void;
 }) {
   const weekDays = useMemo(() => {
     const start = new Date(currentDate);
@@ -479,11 +517,26 @@ function WeekView({
     <div className="flex h-full flex-col rounded-2xl border border-border/70 glass-panel overflow-hidden">
       {/* Day Columns Header */}
       <div className="grid grid-cols-7 border-b border-border/60 bg-accent/30 py-2.5 text-center text-xs font-semibold text-muted-foreground">
-        {weekDays.map(({ label, key }) => {
+        {weekDays.map(({ date, label, key }) => {
           const isToday = key === todayKey;
+          const specialDay = getSpecialDayForDate(date);
+
           return (
-            <div key={key} className={isToday ? "text-teal-600 dark:text-teal-400 font-bold" : ""}>
-              {label}
+            <div key={key} className="flex flex-col items-center gap-1">
+              <span className={isToday ? "text-teal-600 dark:text-teal-400 font-bold" : ""}>
+                {label}
+              </span>
+              {specialDay && (
+                <button
+                  type="button"
+                  onClick={() => onSelectSpecialDay(specialDay)}
+                  className={`inline-flex max-w-[90%] items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-semibold border transition-transform hover:scale-105 ${specialDay.colorScheme.bg} ${specialDay.colorScheme.border} ${specialDay.colorScheme.text}`}
+                  title={`${specialDay.name} • ${specialDay.categoryLabel}`}
+                >
+                  <span className="shrink-0">{specialDay.emoji}</span>
+                  <span className="truncate">{specialDay.name}</span>
+                </button>
+              )}
             </div>
           );
         })}
@@ -543,14 +596,18 @@ function DayView({
   currentDate,
   events,
   onSelectEvent,
+  onSelectSpecialDay,
   onAskAgent,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
+  onSelectSpecialDay: (specialDay: SpecialDay) => void;
   onAskAgent?: (prompt: string) => void;
 }) {
   const dateKey = currentDate.toISOString().split("T")[0];
+  const specialDay = getSpecialDayForDate(currentDate);
+
   const dayEvents = useMemo(() => {
     return events
       .filter((e) => e.start?.startsWith(dateKey))
@@ -589,6 +646,35 @@ function DayView({
           </Button>
         )}
       </div>
+
+      {/* Special Day Banner if matching */}
+      {specialDay && (
+        <div
+          onClick={() => onSelectSpecialDay(specialDay)}
+          className={`mb-4 flex items-center justify-between gap-3 rounded-2xl border p-3.5 cursor-pointer transition-all hover:scale-[1.005] ${specialDay.colorScheme.bg} ${specialDay.colorScheme.border}`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{specialDay.emoji}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${specialDay.colorScheme.border} ${specialDay.colorScheme.text}`}>
+                  {specialDay.categoryLabel}
+                </span>
+                <h4 className={`font-heading text-sm font-bold ${specialDay.colorScheme.text}`}>
+                  {specialDay.name}
+                </h4>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                {specialDay.significance}
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" className="shrink-0 text-xs gap-1 font-semibold">
+            <Sparkles className="size-3.5" />
+            View Details
+          </Button>
+        </div>
+      )}
 
       <ScrollArea className="flex-1 pr-2">
         {dayEvents.length === 0 ? (
@@ -788,6 +874,106 @@ function EventDetailsModal({
                 className="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700"
               >
                 Reschedule with AI
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// Special Day / Festival Details Modal
+// ----------------------------------------------------------------------
+function SpecialDayModal({
+  specialDay,
+  onClose,
+  onAskAgent,
+}: {
+  specialDay: SpecialDay;
+  onClose: () => void;
+  onAskAgent?: (prompt: string) => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity"
+      onClick={onClose}
+    >
+      <div
+        className="glass-panel relative w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl border border-white/15 slide-up-enter text-foreground"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4.5 top-4.5 rounded-full p-1.5 text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all"
+        >
+          <X className="size-5" />
+        </button>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-accent/60 text-3xl shadow-inner border border-border/50">
+              {specialDay.emoji}
+            </div>
+            <div className="min-w-0">
+              <span
+                className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border mb-1 ${specialDay.colorScheme.bg} ${specialDay.colorScheme.border} ${specialDay.colorScheme.text}`}
+              >
+                {specialDay.categoryLabel}
+              </span>
+              <h3 className="font-heading text-xl font-bold tracking-tight text-foreground truncate">
+                {specialDay.name}
+              </h3>
+            </div>
+          </div>
+
+          <div className="space-y-2 rounded-2xl border border-border/60 bg-background/50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Significance & Observance
+            </p>
+            <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+              {specialDay.significance}
+            </p>
+          </div>
+
+          {specialDay.muhuratWindow && (
+            <div className="space-y-1.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-500 dark:text-amber-400">
+                <Sparkles className="size-4 text-amber-400 animate-pulse" />
+                <span>Auspicious Muhurat & Timings</span>
+              </div>
+              <p className="text-xs text-amber-800 dark:text-amber-200/90 leading-relaxed font-medium">
+                {specialDay.muhuratWindow}
+              </p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-border/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="rounded-xl text-xs"
+            >
+              Close
+            </Button>
+
+            {onAskAgent && (
+              <Button
+                variant="glow"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onAskAgent(
+                    `Tell me about the auspicious timing (Muhurat) and significance of ${specialDay.name}, and suggest ideal scheduling advice for this day.`
+                  );
+                }}
+                className="gap-2 rounded-xl text-xs h-9 font-semibold"
+              >
+                <Sparkles className="size-3.5" />
+                Ask Muhurat AI
               </Button>
             )}
           </div>

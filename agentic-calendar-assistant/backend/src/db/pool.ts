@@ -10,7 +10,17 @@ export function getPool(): Pool {
       throw new Error("DATABASE_URL is not set here");
     }
 
-    pool = new Pool({ connectionString });
+    const isCloudDb =
+      process.env.NODE_ENV === "production" ||
+      connectionString.includes("sslmode=require") ||
+      connectionString.includes("neon.tech") ||
+      connectionString.includes("supabase.co") ||
+      connectionString.includes("render.com");
+
+    pool = new Pool({
+      connectionString,
+      ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
+    });
   }
 
   return pool;

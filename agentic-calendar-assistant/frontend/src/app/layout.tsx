@@ -47,11 +47,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/muhurat-logo.png" },
-      { url: "/icon.png", type: "image/png" },
+      { url: "/muhurat-logo.png?v=2", type: "image/png" },
+      { url: "/favicon.ico?v=2" },
     ],
-    apple: [{ url: "/apple-icon.png" }],
-    shortcut: ["/muhurat-logo.png"],
+    apple: [{ url: "/muhurat-logo.png?v=2" }],
+    shortcut: ["/muhurat-logo.png?v=2"],
   },
   openGraph: {
     type: "website",
@@ -141,6 +141,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         className={cn(sans.variable, heading.variable)}
       >
         <head>
+          <link
+            rel="icon"
+            href="/muhurat-logo.png?v=2"
+            type="image/png"
+            sizes="any"
+          />
+          <link rel="shortcut icon" href="/muhurat-logo.png?v=2" />
+          <link rel="apple-touch-icon" href="/muhurat-logo.png?v=2" />
           <meta
             name="google-site-verification"
             content="pZif0Dg_NsIuv1UGV70OSpLxcM1kif5EqM4ydtLh5Gg"

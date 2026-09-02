@@ -39,7 +39,7 @@ export async function loadThread(token: string, threadId: string) {
 
 export async function streamAgentChat(
   token: string,
-  input: { message: string; threadId: string },
+  input: { message: string; threadId: string; timezone?: string },
   onEvent: (event: AgentStreamEvent) => void,
 ) {
   const res = await fetch(`${API_URL}/api/agent/chat`, {

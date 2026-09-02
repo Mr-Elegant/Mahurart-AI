@@ -12,6 +12,7 @@ export const agentRoutes = Router();
 const chatSchema = z.object({
   message: z.string().trim().min(1).max(5000),
   threadId: z.uuid(),
+  timezone: z.string().optional(),
 });
 
 const threadIdSchema = z.uuid();
@@ -69,6 +70,7 @@ agentRoutes.post("/chat", async (req, res) => {
       authUserId: req.userAuth!.authUserId,
       threadId: parsed.data.threadId,
       message: parsed.data.message,
+      timezone: parsed.data.timezone,
       onEvent: write,
     });
   } catch (error) {

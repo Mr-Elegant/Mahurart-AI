@@ -37,6 +37,12 @@ import { cn } from "@/lib/utils";
 import { MarkdownMessage } from "./markdown-message";
 import { ThemeToggle } from "../theme/theme-toggle";
 import { CalendarView } from "../calendar/calendar-view";
+import { TimezoneSelector } from "./timezone-selector";
+import {
+  COUNTRY_TIMEZONES,
+  CountryTimezone,
+  getDefaultTimezone,
+} from "@/lib/timezones";
 
 type Props = {
   sessionToken: string;
@@ -79,6 +85,29 @@ function ChatPanel({ sessionToken, connections, footer }: Props) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [dashboardView, setDashboardView] = useState<"chat" | "calendar" | "split">("split");
   const [calendarRefreshTrigger, setCalendarRefreshTrigger] = useState(0);
+
+  // User-selected Country Standard Timezone (e.g. IST, EST, GMT, SGT)
+  const [selectedTimezone, setSelectedTimezone] = useState<CountryTimezone>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("muhurat_timezone");
+        if (saved) {
+          const match = COUNTRY_TIMEZONES.find((tz) => tz.iana === saved);
+          if (match) return match;
+        }
+      } catch {}
+    }
+    return getDefaultTimezone();
+  });
+
+  function handleSelectTimezone(tz: CountryTimezone) {
+    setSelectedTimezone(tz);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("muhurat_timezone", tz.iana);
+      } catch {}
+    }
+  }
 
   const showEmpty =
     messages.length === 1 && messages[0]?.id === "welcome" && !running;
@@ -171,6 +200,7 @@ function ChatPanel({ sessionToken, connections, footer }: Props) {
         {
           message: trimmed,
           threadId,
+          timezone: selectedTimezone.iana,
         },
         (event) => {
           if (event.type === "progress" && event.message) {
@@ -423,6 +453,10 @@ function ChatPanel({ sessionToken, connections, footer }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
+            <TimezoneSelector
+              selectedTimezone={selectedTimezone}
+              onSelectTimezone={handleSelectTimezone}
+            />
             <ThemeToggle />
           </div>
         </header>
@@ -440,6 +474,7 @@ function ChatPanel({ sessionToken, connections, footer }: Props) {
               <CalendarView
                 sessionToken={sessionToken}
                 refreshTrigger={calendarRefreshTrigger}
+                timezone={selectedTimezone.iana}
                 onAskAgent={(agentPrompt) => {
                   sendMessage(agentPrompt);
                 }}

@@ -14,6 +14,7 @@ export type StreamAgentReplyInput = {
   authUserId: string;
   threadId: string;
   message: string;
+  timezone?: string;
   onEvent: (event: AgentEvent) => void;
 };
 
@@ -194,7 +195,7 @@ export async function streamAgentReply(input: StreamAgentReplyInput) {
   const agent = new Agent({
     id: "muhurat-ai",
     name: "Muhurat AI",
-    instructions: getAgentInstructions(),
+    instructions: getAgentInstructions(input.timezone),
     model,
     tools: createCalendarTools(input.authUserId),
     memory,

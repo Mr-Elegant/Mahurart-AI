@@ -31,12 +31,14 @@ type Props = {
   sessionToken: string;
   onAskAgent?: (prompt: string) => void;
   refreshTrigger?: number;
+  timezone?: string;
 };
 
 export function CalendarView({
   sessionToken,
   onAskAgent,
   refreshTrigger = 0,
+  timezone,
 }: Props) {
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("month");
@@ -288,6 +290,7 @@ export function CalendarView({
             events={events}
             onSelectEvent={setSelectedEvent}
             onSelectSpecialDay={setSelectedSpecialDay}
+            timezone={timezone}
           />
         ) : (
           <DayView
@@ -296,6 +299,7 @@ export function CalendarView({
             onSelectEvent={setSelectedEvent}
             onSelectSpecialDay={setSelectedSpecialDay}
             onAskAgent={onAskAgent}
+            timezone={timezone}
           />
         )}
       </div>
@@ -315,6 +319,7 @@ export function CalendarView({
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           onAskAgent={onAskAgent}
+          timezone={timezone}
         />
       )}
     </div>
@@ -488,11 +493,13 @@ function WeekView({
   events,
   onSelectEvent,
   onSelectSpecialDay,
+  timezone,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
   onSelectSpecialDay: (specialDay: SpecialDay) => void;
+  timezone?: string;
 }) {
   const weekDays = useMemo(() => {
     const start = new Date(currentDate);
@@ -549,8 +556,8 @@ function WeekView({
             return (
               <div key={key} className="space-y-2">
                 {dayEvents.map((event) => {
-                  const startTime = event.start ? formatTimeOnly(event.start) : "";
-                  const endTime = event.end ? formatTimeOnly(event.end) : "";
+                  const startTime = event.start ? formatTimeOnly(event.start, timezone) : "";
+                  const endTime = event.end ? formatTimeOnly(event.end, timezone) : "";
                   const hasMeet = Boolean(event.meetLink);
 
                   return (
@@ -598,12 +605,14 @@ function DayView({
   onSelectEvent,
   onSelectSpecialDay,
   onAskAgent,
+  timezone,
 }: {
   currentDate: Date;
   events: CalendarEvent[];
   onSelectEvent: (event: CalendarEvent) => void;
   onSelectSpecialDay: (specialDay: SpecialDay) => void;
   onAskAgent?: (prompt: string) => void;
+  timezone?: string;
 }) {
   const dateKey = currentDate.toISOString().split("T")[0];
   const specialDay = getSpecialDayForDate(currentDate);
@@ -690,8 +699,8 @@ function DayView({
         ) : (
           <div className="space-y-3">
             {dayEvents.map((event) => {
-              const startTime = event.start ? formatDateTime(event.start) : "No start time";
-              const endTime = event.end ? formatTimeOnly(event.end) : "";
+              const startTime = event.start ? formatDateTime(event.start, timezone) : "No start time";
+              const endTime = event.end ? formatTimeOnly(event.end, timezone) : "";
               const hasMeet = Boolean(event.meetLink);
 
               return (
@@ -763,13 +772,15 @@ function EventDetailsModal({
   event,
   onClose,
   onAskAgent,
+  timezone,
 }: {
   event: CalendarEvent;
   onClose: () => void;
   onAskAgent?: (prompt: string) => void;
+  timezone?: string;
 }) {
-  const startTime = event.start ? formatDateTime(event.start) : "";
-  const endTime = event.end ? formatTimeOnly(event.end) : "";
+  const startTime = event.start ? formatDateTime(event.start, timezone) : "";
+  const endTime = event.end ? formatTimeOnly(event.end, timezone) : "";
   const hasMeet = Boolean(event.meetLink);
 
   return (
@@ -986,27 +997,31 @@ function SpecialDayModal({
 // ----------------------------------------------------------------------
 // Date Formatting Helpers
 // ----------------------------------------------------------------------
-function formatDateTime(isoString: string): string {
+function formatDateTime(isoString: string, timezone?: string): string {
   try {
     const d = new Date(isoString);
-    return d.toLocaleString("default", {
+    return d.toLocaleString("en-US", {
+      timeZone: timezone,
       weekday: "short",
       month: "short",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
+      hour12: true,
     });
   } catch {
     return isoString;
   }
 }
 
-function formatTimeOnly(isoString: string): string {
+function formatTimeOnly(isoString: string, timezone?: string): string {
   try {
     const d = new Date(isoString);
-    return d.toLocaleTimeString("default", {
+    return d.toLocaleTimeString("en-US", {
+      timeZone: timezone,
       hour: "numeric",
       minute: "2-digit",
+      hour12: true,
     });
   } catch {
     return isoString;

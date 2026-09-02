@@ -33,7 +33,11 @@ function ConnectionsPanel({ sessionToken }: { sessionToken: string }) {
       }
       setConnection(data);
     } catch {
-      console.log("failed to load calendar connection");
+      console.log("failed to load calendar connection, falling back to disconnected");
+      setConnection({
+        status: "disconnected",
+        label: "Google Calendar",
+      });
     } finally {
       setLoading(false);
     }

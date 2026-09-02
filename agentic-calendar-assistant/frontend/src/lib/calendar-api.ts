@@ -15,8 +15,11 @@ export async function fetchCalendarEvents(
   timeMin?: string,
   timeMax?: string,
 ): Promise<CalendarEvent[]> {
-  const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = (
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:4000"
+  ).replace(/\/$/, "");
 
   const params = new URLSearchParams();
   if (timeMin) params.set("timeMin", timeMin);

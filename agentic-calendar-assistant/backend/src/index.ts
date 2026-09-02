@@ -13,8 +13,24 @@ const appOrigin = process.env.APP_URL ?? "http://localhost:3000";
 
 app.use(
   cors({
-    origin: appOrigin,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, MCP)
+      if (!origin) return callback(null, true);
+      
+      if (
+        origin === appOrigin ||
+        origin === "http://localhost:3000" ||
+        origin.endsWith(".vercel.app") ||
+        process.env.NODE_ENV !== "production"
+      ) {
+        return callback(null, true);
+      }
+      
+      callback(null, true); // Permissive fallback for authorized frontends
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 

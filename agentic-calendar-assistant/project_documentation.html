@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agentic Calendar Assistant — Project Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6C47FF;
+      --primary-light: #EEE9FF;
+      --accent: #00BFA5;
+      --accent-light: #E0FAF7;
+      --danger: #FF4B4B;
+      --warn: #FF9800;
+      --warn-light: #FFF3E0;
+      --bg: #FFFFFF;
+      --surface: #F8F9FC;
+      --border: #E2E6EF;
+      --text: #111827;
+      --text-muted: #6B7280;
+      --code-bg: #1E1E2E;
+      --code-text: #CDD6F4;
+    }
+
+    html { font-size: 14px; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+    }
+
+    /* ── COVER ── */
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0F0C29 0%, #302B63 50%, #24243E 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 40px;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: -120px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,71,255,0.35) 0%, transparent 70%);
+    }
+    .cover::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; right: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,191,165,0.25) 0%, transparent 70%);
+    }
+    .cover-badge {
+      display: inline-block;
+      background: rgba(108,71,255,0.3);
+      border: 1px solid rgba(108,71,255,0.6);
+      color: #C4B5FD;
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      position: relative; z-index: 1;
+    }
+    .cover h1 {
+      font-size: 52px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      position: relative; z-index: 1;
+    }
+    .cover h1 span { color: #A78BFA; }
+    .cover-sub {
+      font-size: 18px;
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+      margin-bottom: 48px;
+      position: relative; z-index: 1;
+    }
+    .cover-meta {
+      display: flex;
+      gap: 40px;
+      position: relative; z-index: 1;
+    }
+    .cover-meta-item { text-align: center; }
+    .cover-meta-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .cover-meta-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #C4B5FD;
+      margin-top: 4px;
+    }
+    .cover-divider {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, #6C47FF, #00BFA5);
+      border-radius: 2px;
+      margin: 40px auto;
+      position: relative; z-index: 1;
+    }
+
+    /* ── LAYOUT ── */
+    .doc {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 50px;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      margin-bottom: 60px;
+      page-break-after: always;
+    }
+    .toc-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--primary);
+    }
+    .toc ol { padding-left: 20px; counter-reset: toc-main; }
+    .toc > ol > li {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 10px;
+      list-style: none;
+      counter-increment: toc-main;
+    }
+    .toc > ol > li::before {
+      content: counter(toc-main) ". ";
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .toc > ol > li > ol {
+      counter-reset: toc-sub;
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+    .toc > ol > li > ol > li {
+      font-weight: 400;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      list-style: none;
+      counter-increment: toc-sub;
+    }
+    .toc > ol > li > ol > li::before {
+      content: counter(toc-main) "." counter(toc-sub) " ";
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── SECTIONS ── */
+    .section { margin-bottom: 56px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-number {
+      display: flex;
+      align-items: center; justify-content: center;
+      width: 38px; height: 38px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    h2 { font-size: 26px; font-weight: 700; color: var(--text); }
+    h3 { font-size: 19px; font-weight: 600; color: var(--text); margin: 28px 0 12px; }
+    h4 { font-size: 15px; font-weight: 600; color: var(--primary); margin: 20px 0 8px; }
+    p { margin-bottom: 14px; color: var(--text); font-size: 14px; }
+    ul, ol { padding-left: 22px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; font-size: 14px; }
+    strong { font-weight: 600; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { flex: 1; font-size: 13.5px; }
+    .callout-title { font-weight: 700; margin-bottom: 4px; }
+    .callout.info { background: var(--primary-light); border-left: 4px solid var(--primary); }
+    .callout.info .callout-title { color: var(--primary); }
+    .callout.success { background: var(--accent-light); border-left: 4px solid var(--accent); }
+    .callout.success .callout-title { color: #00796B; }
+    .callout.warn { background: var(--warn-light); border-left: 4px solid var(--warn); }
+    .callout.warn .callout-title { color: #E65100; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 12px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.65;
+      margin: 16px 0;
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(108,71,255,0.08);
+      color: var(--primary);
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .kw { color: #CBA6F7; }
+    .str { color: #A6E3A1; }
+    .cm { color: #585B70; font-style: italic; }
+    .fn { color: #89DCEB; }
+    .num { color: #FAB387; }
+    .cls { color: #F9E2AF; }
+
+    /* ── TABLES ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 13px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    th {
+      background: var(--primary);
+      color: #fff;
+      padding: 11px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12.5px;
+      letter-spacing: 0.4px;
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--surface); }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-purple { background: var(--primary-light); color: var(--primary); }
+    .badge-green { background: var(--accent-light); color: #00796B; }
+    .badge-orange { background: var(--warn-light); color: #E65100; }
+    .badge-gray { background: #F3F4F6; color: #4B5563; }
+
+    /* ── DIAGRAM BOX ── */
+    .diagram {
+      background: #F8F9FC;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin: 20px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 2;
+      color: #374151;
+    }
+    .diagram .box {
+      display: inline-block;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 6px 14px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 600;
+      font-size: 12px;
+      margin: 2px 4px;
+    }
+    .diagram .box-green {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: #00796B;
+    }
+    .diagram .box-gray {
+      border-color: #9CA3AF;
+      background: #F3F4F6;
+      color: #374151;
+    }
+    .diagram .arrow { color: #9CA3AF; font-weight: 700; }
+    .diagram .layer {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 8px 0;
+    }
+    .diagram .layer-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* ── FLOW ── */
+    .flow { display: flex; flex-direction: column; gap: 0; margin: 20px 0; }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .flow-left { display: flex; flex-direction: column; align-items: center; }
+    .flow-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .flow-line {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: linear-gradient(180deg, var(--primary) 0%, rgba(108,71,255,0.1) 100%);
+      margin: 4px 0;
+    }
+    .flow-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      flex: 1;
+    }
+    .flow-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .flow-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ── PAGE BREAKS ── */
+    .page-break { page-break-before: always; }
+
+    /* ── FOOTER ── */
+    .doc-footer {
+      margin-top: 80px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* ── FILE TREE ── */
+    .tree {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.8;
+    }
+    .tree .dir { color: #89DCEB; font-weight: 600; }
+    .tree .file { color: #CDD6F4; }
+    .tree .comment { color: #585B70; font-style: italic; }
+
+    @media print {
+      body { font-size: 12px; }
+      .cover { min-height: unset; padding: 80px 60px; }
+      .cover h1 { font-size: 40px; }
+      .doc { padding: 40px; }
+      pre { font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     COVER PAGE
+     ═══════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Technical Documentation</div>
+  <h1>Agentic <span>Calendar</span><br>Assistant</h1>
+  <p class="cover-sub">
+    A full-stack AI-powered meeting assistant that lets users manage their
+    Google Calendar through natural language — create, reschedule, and cancel
+    events via a chat interface.
+  </p>
+  <div class="cover-divider"></div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Version</div>
+      <div class="cover-meta-value">1.0.0</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Date</div>
+      <div class="cover-meta-value">September 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Stack</div>
+      <div class="cover-meta-value">Next.js · Express · Mastra</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Type</div>
+      <div class="cover-meta-value">HLD + LLD</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DOCUMENT BODY
+     ═══════════════════════════════════════════════ -->
+<div class="doc">
+
+  <!-- ── TABLE OF CONTENTS ── -->
+  <div class="toc">
+    <div class="toc-title">📋 Table of Contents</div>
+    <ol>
+      <li>Project Overview
+        <ol>
+          <li>Purpose &amp; Goals</li>
+          <li>Core Features</li>
+          <li>Tech Stack Summary</li>
+        </ol>
+      </li>
+      <li>High-Level Design (HLD)
+        <ol>
+          <li>System Architecture</li>
+          <li>Component Overview</li>
+          <li>Data Flow Diagram</li>
+          <li>External Integrations</li>
+          <li>Infrastructure &amp; Deployment</li>
+        </ol>
+      </li>
+      <li>Low-Level Design (LLD)
+        <ol>
+          <li>Backend — Project Structure</li>
+          <li>Database Schema</li>
+          <li>Backend Services</li>
+          <li>API Endpoints Reference</li>
+          <li>AI Agent Architecture</li>
+          <li>MCP Server</li>
+          <li>Authentication Middleware</li>
+          <li>Frontend Architecture</li>
+          <li>Frontend Components</li>
+          <li>Frontend State &amp; Data Flow</li>
+        </ol>
+      </li>
+      <li>API Reference</li>
+      <li>Environment Configuration</li>
+      <li>Data Models</li>
+      <li>Security Design</li>
+      <li>Error Handling Strategy</li>
+      <li>Setup &amp; Running Locally</li>
+    </ol>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 1 — PROJECT OVERVIEW
+       ══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>Project Overview</h2>
+    </div>
+
+    <h3>1.1 Purpose &amp; Goals</h3>
+    <p>
+      The <strong>Agentic Calendar Assistant</strong> is a production-grade, full-stack
+      web application that gives users the ability to manage their Google Calendar
+      through a natural-language chat interface powered by a Large Language Model (LLM).
+      Rather than navigating calendar UI, users simply type commands like
+      <em>"Schedule a 30-minute standup tomorrow at 10 AM and invite john@example.com"</em>
+      and the AI agent executes the action autonomously.
+    </p>
+    <p>
+      The project demonstrates modern <strong>Agentic AI</strong> patterns: the LLM
+      reasons over the user's request, selects the appropriate tool(s) from a predefined
+      toolset, invokes them with correct parameters, and streams a structured reply back
+      to the user in real time.
+    </p>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Agentic AI Pattern</div>
+        Unlike simple chatbots that only answer questions, this app uses an <strong>LLM agent
+        with tools</strong> — the model can autonomously decide which Google Calendar API
+        to call, extract structured parameters from natural language, and compose a
+        meaningful response from the API's result.
+      </div>
+    </div>
+
+    <h3>1.2 Core Features</h3>
+    <ul>
+      <li>🗓️ <strong>List upcoming meetings</strong> — fetch upcoming Google Calendar events (all or today-only)</li>
+      <li>🆕 <strong>Create meetings</strong> — create events with title, time, attendees, optional Google Meet link</li>
+      <li>🔁 <strong>Reschedule meetings</strong> — move an existing event to a new start/end time</li>
+      <li>❌ <strong>Cancel meetings</strong> — delete an event and notify all attendees</li>
+      <li>🔍 <strong>Check availability</strong> — check if the user is free/busy in a given time window</li>
+      <li>💬 <strong>Persistent chat threads</strong> — conversation history saved per user with multi-thread support</li>
+      <li>🧠 <strong>Working memory</strong> — agent stores user preferences (timezone, default length, usual attendees)</li>
+      <li>🔐 <strong>Secure OAuth</strong> — Google Calendar OAuth managed via Descope (no raw token handling in app)</li>
+      <li>🔌 <strong>MCP Server</strong> — exposes calendar tools as a Model Context Protocol endpoint for AI IDEs like Cursor</li>
+      <li>🌊 <strong>Streaming responses</strong> — real-time token-by-token reply via Server-Sent Events (SSE)</li>
+    </ul>
+
+    <h3>1.3 Tech Stack Summary</h3>
+    <table>
+      <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Role</th>
+      </tr>
+      <tr>
+        <td><strong>Frontend</strong></td>
+        <td>Next.js 16 (App Router), React 19, TypeScript</td>
+        <td>Chat UI, auth session, connection management</td>
+      </tr>
+      <tr>
+        <td><strong>Styling</strong></td>
+        <td>Tailwind CSS v4, shadcn/ui, Base UI</td>
+        <td>Component library and design tokens</td>
+      </tr>
+      <tr>
+        <td><strong>Backend</strong></td>
+        <td>Express 5, TypeScript, Node.js (ESM)</td>
+        <td>REST API, SSE streaming, session validation</td>
+      </tr>
+      <tr>
+        <td><strong>AI Agent</strong></td>
+        <td>Mastra Core, OpenAI GPT-4o-mini</td>
+        <td>LLM agent with tool-calling and memory</td>
+      </tr>
+      <tr>
+        <td><strong>Agent Memory</strong></td>
+        <td>Mastra Memory + LibSQL (SQLite)</td>
+        <td>Thread history and working memory storage</td>
+      </tr>
+      <tr>
+        <td><strong>Calendar API</strong></td>
+        <td>Google Calendar API v3 (googleapis SDK)</td>
+        <td>All calendar CRUD operations</td>
+      </tr>
+      <tr>
+        <td><strong>Authentication</strong></td>
+        <td>Descope (NextJS SDK + Node SDK)</td>
+        <td>User auth (sign-in/up), OAuth token management</td>
+      </tr>
+      <tr>
+        <td><strong>Database</strong></td>
+        <td>PostgreSQL 16 (pg driver)</td>
+        <td>Users and connection status persistence</td>
+      </tr>
+      <tr>
+        <td><strong>MCP</strong></td>
+        <td>@descope/mcp-express</td>
+        <td>Model Context Protocol server for AI IDEs</td>
+      </tr>
+      <tr>
+        <td><strong>Validation</strong></td>
+        <td>Zod v4</td>
+        <td>Request body and schema validation</td>
+      </tr>
+      <tr>
+        <td><strong>Infrastructure</strong></td>
+        <td>Docker Compose</td>
+        <td>Local PostgreSQL container</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 2 — HIGH-LEVEL DESIGN
+       ══════════════════════════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>High-Level Design (HLD)</h2>
+    </div>
+
+    <h3>2.1 System Architecture</h3>
+    <p>
+      The system follows a classic <strong>3-tier architecture</strong> augmented with
+      an AI agent layer and external SaaS integrations. All layers communicate over HTTPS.
+    </p>
+
+    <div class="diagram">
+      <div class="layer">
+        <div class="layer-title">🌐 External World / User</div>
+        <span class="box box-gray">Browser (User)</span>
+        <span class="arrow"> ──────── </span>
+        <span class="box box-gray">AI IDE / Cursor (MCP Client)</span>
+      </div>
+
+      <div style="text-align:center; padding: 8px 0; color: #9CA3AF; font-weight: 700;">
+        ↕ HTTPS / SSE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↕ MCP (HTTP POST)
+      </div>
+
+      <div class="layer">
+        <div class="layer-title">🎨 Presentation Layer (Port 3000)</div>
+        <span class="box">Next.js Frontend</span>
+        &nbsp; Pages: <code>/ | /sign-in | /dashboard</code><br>
+        &nbsp; Auth via <strong>Descope NextJS SDK</strong> · Chat UI · Connection Panel
+      </div>
+
+      <div style="text-align:center; padding: 8px 0; color: #9CA3AF; font-weight: 700;">
+        ↕ REST + SSE (Bearer Token)
+      </div>
+
+      <div class="layer">
+        <div class="layer-title">⚙️ Application Layer (Port 4000)</div>
+        <span class="box">Express Backend</span>
+        &nbsp; Routes: <code>/api/connections | /api/agent | /mcp</code><br>
+        &nbsp; Middleware: <strong>requireSession</strong> (validates Descope JWT)<br>
+        &nbsp; AI Agent via <strong>Mastra</strong> · Calendar ops via <strong>googleapis</strong>
+      </div>
+
+      <div style="text-align:center; padding: 8px 0; color: #9CA3AF; font-weight: 700;">
+        ↕ SQL (pg) &nbsp;&nbsp;&nbsp; ↕ Mastra LibSQL &nbsp;&nbsp;&nbsp; ↕ Descope API &nbsp;&nbsp;&nbsp; ↕ Google Calendar API
+      </div>
+
+      <div class="layer">
+        <div class="layer-title">🗄️ Data Layer</div>
+        <span class="box box-green">PostgreSQL</span>
+        &nbsp;<em>users, connections</em>&nbsp;&nbsp;
+        <span class="box box-green">LibSQL (SQLite)</span>
+        &nbsp;<em>agent threads, messages, working memory</em>&nbsp;&nbsp;
+        <span class="box box-gray">Descope Cloud</span>
+        &nbsp;<em>auth + OAuth tokens</em>&nbsp;&nbsp;
+        <span class="box box-gray">Google APIs</span>
+        &nbsp;<em>Calendar data</em>
+      </div>
+    </div>
+
+    <h3>2.2 Component Overview</h3>
+    <table>
+      <tr><th>Component</th><th>Technology</th><th>Responsibility</th></tr>
+      <tr>
+        <td><strong>Next.js Frontend</strong></td>
+        <td>Next.js 16, React 19</td>
+        <td>Renders chat UI, sign-in page, manages auth sessions via Descope SDK, communicates with backend over REST/SSE</td>
+      </tr>
+      <tr>
+        <td><strong>Express Backend</strong></td>
+        <td>Express 5, TypeScript</td>
+        <td>REST API host, validates JWT, orchestrates services, mounts MCP endpoint</td>
+      </tr>
+      <tr>
+        <td><strong>Agent Service</strong></td>
+        <td>Mastra Core + OpenAI</td>
+        <td>Creates the LLM agent, injects tools, streams replies, manages thread lifecycle</td>
+      </tr>
+      <tr>
+        <td><strong>Calendar Service</strong></td>
+        <td>googleapis SDK</td>
+        <td>Low-level Google Calendar API calls: list, insert, patch, delete, freebusy</td>
+      </tr>
+      <tr>
+        <td><strong>Connection Service</strong></td>
+        <td>Descope Node SDK</td>
+        <td>Manages Google Calendar OAuth connect flow and retrieves access tokens</td>
+      </tr>
+      <tr>
+        <td><strong>Token Service</strong></td>
+        <td>Descope Node SDK</td>
+        <td>Fetches Google OAuth access tokens from Descope's outbound app storage</td>
+      </tr>
+      <tr>
+        <td><strong>Memory Store</strong></td>
+        <td>Mastra Memory + LibSQL</td>
+        <td>Stores conversation threads, messages (last 20), working memory preferences</td>
+      </tr>
+      <tr>
+        <td><strong>MCP Server</strong></td>
+        <td>@descope/mcp-express</td>
+        <td>Exposes listUpcomingMeetings as MCP tool for AI IDE integrations (e.g. Cursor)</td>
+      </tr>
+      <tr>
+        <td><strong>PostgreSQL DB</strong></td>
+        <td>PostgreSQL 16</td>
+        <td>Persists app users (mapped to Descope auth IDs) and Google Calendar connection status</td>
+      </tr>
+    </table>
+
+    <h3>2.3 Data Flow Diagram — Chat Request</h3>
+    <p>The following shows the complete lifecycle of a user's chat message through the system:</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">1</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">User sends a message in the chat UI</div>
+          <div class="flow-desc">Frontend collects prompt text + current <code>threadId</code> (UUID). Optimistically adds a "Thinking…" bubble to the UI state.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">2</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">POST /api/agent/chat with Bearer token</div>
+          <div class="flow-desc">Frontend sends HTTP POST with <code>{ message, threadId }</code> and sets <code>Accept: text/event-stream</code> to open an SSE connection.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">3</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">requireSession middleware validates JWT</div>
+          <div class="flow-desc">Backend calls <code>descopeClient.validateSession(token)</code>. On success, extracts <code>authUserId</code> (sub claim) and upserts user into PostgreSQL via <code>ensureUser()</code>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">4</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">streamAgentReply() creates a Mastra Agent</div>
+          <div class="flow-desc">Instantiates <code>new Agent({ model: 'openai/gpt-4o-mini', tools: createCalendarTools(authUserId), memory })</code> with injected calendar tools and memory store.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">5</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">Agent streams through fullStream</div>
+          <div class="flow-desc">The LLM processes message + thread history. For each <code>tool-call</code> chunk, emits an SSE "progress" event. For each <code>text-delta</code>, emits an SSE "token" event.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">6</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">Tool execution — Calendar Service called</div>
+          <div class="flow-desc">When the agent decides to call e.g. <code>createMeeting</code>, Mastra invokes the tool's <code>execute</code> function. This calls <code>getCalendarAccessToken(authUserId)</code> → Descope API → Google Calendar API.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">7</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">Tokens stream to frontend — UI renders markdown</div>
+          <div class="flow-desc">Each SSE token event appends text to the assistant message bubble in real-time. <code>MarkdownMessage</code> renders with <code>react-markdown</code> + <code>remark-gfm</code>.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left">
+          <div class="flow-num">8</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-title">Thread auto-titled and "completed" emitted</div>
+          <div class="flow-desc">After streaming finishes, if the thread has no title, it's named after the first 80 chars of the user's message. SSE "completed" event is sent, frontend refreshes thread list.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>2.4 External Integrations</h3>
+    <table>
+      <tr><th>Service</th><th>Purpose</th><th>How Used</th></tr>
+      <tr>
+        <td><strong>Descope</strong></td>
+        <td>Auth + OAuth token broker</td>
+        <td>User sign-in/sign-up; Google Calendar OAuth flow; stores and retrieves Google OAuth access tokens securely via <em>Outbound Apps</em> feature</td>
+      </tr>
+      <tr>
+        <td><strong>Google Calendar API v3</strong></td>
+        <td>Calendar data source</td>
+        <td>All calendar operations — events.list, events.insert, events.patch, events.delete, freebusy.query</td>
+      </tr>
+      <tr>
+        <td><strong>OpenAI API</strong></td>
+        <td>LLM inference</td>
+        <td>GPT-4o-mini model for agent reasoning and text generation (configurable via <code>AI_MODEL</code> env)</td>
+      </tr>
+    </table>
+
+    <h3>2.5 Infrastructure &amp; Deployment</h3>
+    <ul>
+      <li><strong>Local Dev:</strong> Docker Compose spins up PostgreSQL on port <code>5442</code>. Frontend on port <code>3000</code>, Backend on port <code>4000</code>.</li>
+      <li><strong>Database:</strong> PostgreSQL 16 Alpine image. Persistent volume <code>postgres_data</code>. Migrations run via <code>npm run migrate</code>.</li>
+      <li><strong>Agent Memory:</strong> LibSQL file-based SQLite at <code>mastra.db</code> in the backend working directory.</li>
+      <li><strong>Frontend:</strong> Next.js App Router — can be deployed to Vercel. Auth session stored in cookies (SameSite=Lax).</li>
+      <li><strong>Backend:</strong> Node.js ESM module. Can be containerized. <code>tsx watch</code> for dev, <code>tsc + node dist/</code> for prod.</li>
+    </ul>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        <div class="callout-title">MCP Server (Optional)</div>
+        The MCP endpoint (<code>POST /mcp</code>) is only mounted if <code>DESCOPE_MCP_SERVER_WELL_KNOWN_URL</code> is
+        configured. It enables AI IDEs like Cursor to use the calendar tools directly without the chat UI.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 3 — LOW-LEVEL DESIGN
+       ══════════════════════════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>Low-Level Design (LLD)</h2>
+    </div>
+
+    <h3>3.1 Backend — Project Structure</h3>
+    <div class="tree">
+<span class="dir">backend/</span><br>
+├── <span class="dir">src/</span><br>
+│   ├── <span class="file">index.ts</span>              <span class="comment"># Express app entry — CORS, routes, MCP mount</span><br>
+│   ├── <span class="dir">config/</span><br>
+│   │   ├── <span class="file">agent-instructions.ts</span> <span class="comment"># System prompt for the LLM agent</span><br>
+│   │   ├── <span class="file">descope.ts</span>           <span class="comment"># Descope client + connection constants</span><br>
+│   │   └── <span class="file">memory.ts</span>            <span class="comment"># Mastra Memory + LibSQL store setup</span><br>
+│   ├── <span class="dir">db/</span><br>
+│   │   └── <span class="file">pool.ts</span>              <span class="comment"># Singleton PostgreSQL connection pool</span><br>
+│   ├── <span class="dir">middleware/</span><br>
+│   │   └── <span class="file">requireSession.ts</span>    <span class="comment"># JWT validation + user upsert</span><br>
+│   ├── <span class="dir">mcp/</span><br>
+│   │   ├── <span class="file">mount.ts</span>             <span class="comment"># Mounts MCP server on Express app</span><br>
+│   │   └── <span class="file">calendar-tools.ts</span>    <span class="comment"># MCP tool definitions (listUpcomingMeetings)</span><br>
+│   ├── <span class="dir">repositories/</span><br>
+│   │   ├── <span class="file">connection.repository.ts</span> <span class="comment"># DB ops for connections table</span><br>
+│   │   └── <span class="file">user.repository.ts</span>   <span class="comment"># DB ops for users table (upsert)</span><br>
+│   ├── <span class="dir">routes/</span><br>
+│   │   ├── <span class="file">agent.routes.ts</span>      <span class="comment"># GET /threads, GET /threads/:id, POST /chat</span><br>
+│   │   └── <span class="file">connection.routes.ts</span> <span class="comment"># GET /, POST /connect, POST /refresh-status</span><br>
+│   └── <span class="dir">services/</span><br>
+│       ├── <span class="file">agent.service.ts</span>     <span class="comment"># Mastra agent creation, streaming, thread ops</span><br>
+│       ├── <span class="file">agent-tools.service.ts</span> <span class="comment"># Mastra tool definitions wrapping calendar.service</span><br>
+│       ├── <span class="file">calendar.service.ts</span>  <span class="comment"># Google Calendar API operations</span><br>
+│       ├── <span class="file">connection.service.ts</span> <span class="comment"># Descope outbound OAuth connect/refresh logic</span><br>
+│       └── <span class="file">token.service.ts</span>     <span class="comment"># Retrieve Google access token from Descope</span><br>
+├── <span class="dir">sql/</span><br>
+│   ├── <span class="file">001_users.sql</span>         <span class="comment"># Users table DDL</span><br>
+│   └── <span class="file">002_connections.sql</span>   <span class="comment"># Connections table DDL</span><br>
+├── <span class="dir">scripts/</span><br>
+│   └── <span class="file">migrate.ts</span>           <span class="comment"># Runs SQL migrations sequentially</span><br>
+├── <span class="file">package.json</span><br>
+├── <span class="file">tsconfig.json</span><br>
+└── <span class="file">.env</span>                    <span class="comment"># Environment variables</span>
+    </div>
+
+    <div class="tree" style="margin-top: 16px;">
+<span class="dir">frontend/</span><br>
+├── <span class="dir">src/</span><br>
+│   ├── <span class="dir">app/</span><br>
+│   │   ├── <span class="file">layout.tsx</span>           <span class="comment"># Root layout — AuthProvider, fonts, metadata</span><br>
+│   │   ├── <span class="file">page.tsx</span>             <span class="comment"># Landing page (placeholder)</span><br>
+│   │   ├── <span class="file">globals.css</span>          <span class="comment"># Design tokens + global styles</span><br>
+│   │   ├── <span class="dir">dashboard/</span><br>
+│   │   │   └── <span class="file">page.tsx</span>         <span class="comment"># Protected dashboard — ChatPanel + ConnectionPanel</span><br>
+│   │   └── <span class="dir">sign-in/</span><br>
+│   │       └── <span class="file">page.tsx</span>         <span class="comment"># Sign-in page (Descope UI)</span><br>
+│   ├── <span class="dir">components/</span><br>
+│   │   ├── <span class="dir">auth/</span><br>
+│   │   │   ├── <span class="file">sign-in.tsx</span>      <span class="comment"># Descope sign-in component</span><br>
+│   │   │   └── <span class="file">RedirectIfAuthenticated.tsx</span> <span class="comment"># Auth guard</span><br>
+│   │   ├── <span class="dir">dashboard/</span><br>
+│   │   │   ├── <span class="file">chat-panel.tsx</span>   <span class="comment"># Full chat UI (500 lines)</span><br>
+│   │   │   ├── <span class="file">connection-panel.tsx</span> <span class="comment"># Google Calendar connection widget</span><br>
+│   │   │   └── <span class="file">markdown-message.tsx</span> <span class="comment"># react-markdown renderer</span><br>
+│   │   └── <span class="dir">ui/</span>                  <span class="comment"># shadcn/ui primitives (Button, Textarea, etc.)</span><br>
+│   └── <span class="dir">lib/</span><br>
+│       ├── <span class="file">agent.ts</span>             <span class="comment"># listThreads, loadThread, streamAgentChat</span><br>
+│       ├── <span class="file">api.ts</span>               <span class="comment"># Generic apiFetch helper with auth headers</span><br>
+│       ├── <span class="file">connections.ts</span>       <span class="comment"># fetchCalendarConnection, connectCalendar, refresh</span><br>
+│       ├── <span class="file">types.ts</span>             <span class="comment"># Shared TypeScript types</span><br>
+│       └── <span class="file">utils.ts</span>             <span class="comment"># cn() (tailwind class merging)</span><br>
+├── <span class="file">package.json</span><br>
+├── <span class="file">next.config.ts</span><br>
+└── <span class="file">tsconfig.json</span>
+    </div>
+
+    <h3>3.2 Database Schema</h3>
+    <p>The app uses two PostgreSQL tables for application state. Agent memory is stored separately in a LibSQL file.</p>
+
+    <h4>Table: <code>users</code></h4>
+    <table>
+      <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Description</th></tr>
+      <tr><td><code>id</code></td><td>UUID</td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td><td>Internal app user ID</td></tr>
+      <tr><td><code>auth_user_id</code></td><td>TEXT</td><td>UNIQUE NOT NULL</td><td>Descope user ID (JWT sub claim)</td></tr>
+      <tr><td><code>email</code></td><td>TEXT</td><td>NULLABLE</td><td>User email from Descope JWT claims</td></tr>
+      <tr><td><code>created_at</code></td><td>TIMESTAMPTZ</td><td>NOT NULL, DEFAULT NOW()</td><td>Account creation time</td></tr>
+    </table>
+
+    <h4>Table: <code>connections</code></h4>
+    <table>
+      <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Description</th></tr>
+      <tr><td><code>user_id</code></td><td>UUID</td><td>FK → users(id) ON DELETE CASCADE</td><td>App user ID</td></tr>
+      <tr><td><code>provider</code></td><td>TEXT</td><td>CHECK IN ('calendar')</td><td>OAuth provider name</td></tr>
+      <tr><td><code>status</code></td><td>TEXT</td><td>CHECK IN ('connected','disconnected','pending')</td><td>Current connection state</td></tr>
+      <tr><td colspan="4"><em>PRIMARY KEY (user_id, provider)</em></td></tr>
+    </table>
+
+    <div class="callout success">
+      <div class="callout-icon">📦</div>
+      <div class="callout-body">
+        <div class="callout-title">Agent Memory Database (LibSQL)</div>
+        Mastra uses a separate <strong>LibSQL (SQLite) file</strong> (<code>mastra.db</code>) to persist:
+        <ul>
+          <li><strong>Threads</strong> — conversation sessions keyed by UUID + resourceId (authUserId)</li>
+          <li><strong>Messages</strong> — all messages per thread (last 20 recalled per request)</li>
+          <li><strong>Working Memory</strong> — per-user preferences (timezone, default meeting length, usual invitees)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>3.3 Backend Services</h3>
+
+    <h4>agent.service.ts — Core Agent Logic</h4>
+    <p>This is the heart of the application. Key responsibilities:</p>
+    <ul>
+      <li><strong><code>streamAgentReply()</code></strong> — Creates a Mastra <code>Agent</code> instance on every request (stateless), passes user's <code>authUserId</code> as the memory resource scoping ID, then iterates <code>agent.stream().fullStream</code>. Emits SSE events for tool calls (progress) and text deltas (tokens).</li>
+      <li><strong><code>listUserThreads()</code></strong> — Queries Mastra memory for all threads belonging to a user (up to 30, ordered by updatedAt DESC).</li>
+      <li><strong><code>getThreadMessages()</code></strong> — Validates thread ownership (resourceId must match authUserId), then recalls all messages. Normalizes content to string (handles both string and structured content with parts array).</li>
+      <li><strong>Auto-thread titling</strong> — After streaming completes, if the thread has no title, sets it to the first 80 characters of the user's message.</li>
+    </ul>
+
+    <h4>agent-tools.service.ts — Mastra Tool Definitions</h4>
+    <p>Defines 5 Mastra tools that wrap the calendar service. Each tool has:</p>
+    <ul>
+      <li><strong>id</strong> — unique string identifier the LLM references</li>
+      <li><strong>description</strong> — natural language description the LLM uses to decide when to call it</li>
+      <li><strong>inputSchema</strong> — Zod schema for parameter validation</li>
+      <li><strong>execute</strong> — async function calling the corresponding calendar service method</li>
+    </ul>
+
+    <table>
+      <tr><th>Tool ID</th><th>Description</th><th>Key Parameters</th></tr>
+      <tr><td><code>listUpcomingMeetings</code></td><td>List Google Calendar events</td><td><code>maxResults</code> (1-20), <code>todayOnly</code> (boolean)</td></tr>
+      <tr><td><code>checkCalendarBusy</code></td><td>Check free/busy status</td><td><code>startIso</code>, <code>endIso</code> (ISO-8601)</td></tr>
+      <tr><td><code>createMeeting</code></td><td>Create event + optional Meet link</td><td><code>title</code>, <code>startIso</code>, <code>endIso</code>, <code>attendeeEmails?</code>, <code>description?</code>, <code>addGoogleMeet?</code></td></tr>
+      <tr><td><code>rescheduleMeeting</code></td><td>Move existing event to new time</td><td><code>eventId</code>, <code>startIso</code>, <code>endIso</code></td></tr>
+      <tr><td><code>cancelMeeting</code></td><td>Delete event + notify attendees</td><td><code>eventId</code></td></tr>
+    </table>
+
+    <h4>calendar.service.ts — Google Calendar API Layer</h4>
+    <p>All Google API calls are funnelled through this service. Key design decisions:</p>
+    <ul>
+      <li><strong>OAuth2 client per call:</strong> Creates a new <code>google.auth.OAuth2()</code> instance for each request, sets credentials from the fetched access token. Stateless and safe for concurrent requests.</li>
+      <li><strong>formatEvent():</strong> Normalizes the verbose Google API response into a clean object: <code>{ id, title, description, location, start, end, htmlLink, meetLink, attendees[] }</code>.</li>
+      <li><strong>createMeeting:</strong> Adds a Google Meet link by default (<code>conferenceDataVersion: 1</code>). Sends calendar invites to all attendees (<code>sendUpdates: 'all'</code>). Uses <code>randomUUID()</code> as the conference request ID.</li>
+      <li><strong>listUpcomingMeetings:</strong> Supports <code>todayOnly</code> flag that clamps <code>timeMin/timeMax</code> to start/end of current day (midnight to 23:59:59).</li>
+    </ul>
+
+    <h4>connection.service.ts — OAuth Connection Management</h4>
+    <ul>
+      <li><strong><code>createCalendarConnectUrl()</code></strong> — Calls Descope's <code>outbound.connect()</code> to generate a Google OAuth authorization URL, saves <code>status: 'pending'</code> in DB, returns the URL for frontend redirect.</li>
+      <li><strong><code>refreshCalendarConnection()</code></strong> — Calls Descope management API to check if a token exists for the user, updates DB status to <code>'connected'</code> or <code>'disconnected'</code>.</li>
+      <li><strong><code>getCalendarConnection()</code></strong> — Returns current connection status from DB (defaults to <code>'disconnected'</code> if no row found).</li>
+    </ul>
+
+    <h4>token.service.ts — Access Token Retrieval</h4>
+    <p>Single function: <code>getCalendarAccessToken(authUserId)</code>. Calls Descope's management API <code>outboundApplication.fetchToken(appId, authUserId)</code> and extracts the <code>accessToken</code> field. Throws with a descriptive message if token is missing (prompts user to reconnect).</p>
+
+    <h3>3.4 API Endpoints Reference</h3>
+
+    <h4>Connection Routes — <code>POST /api/connections</code></h4>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Auth</th><th>Request Body</th><th>Response</th></tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/api/connections</code></td>
+        <td>✅</td>
+        <td>—</td>
+        <td><code>{ connection: { label, status } }</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">POST</span></td>
+        <td><code>/api/connections/connect</code></td>
+        <td>✅</td>
+        <td><code>{ refreshToken, redirectUrl? }</code></td>
+        <td><code>{ url: string }</code> (OAuth redirect URL)</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">POST</span></td>
+        <td><code>/api/connections/refresh-status</code></td>
+        <td>✅</td>
+        <td>—</td>
+        <td><code>{ connection: { label, status } }</code></td>
+      </tr>
+    </table>
+
+    <h4>Agent Routes — <code>/api/agent</code></h4>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Auth</th><th>Request</th><th>Response</th></tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/api/agent/threads</code></td>
+        <td>✅</td>
+        <td>—</td>
+        <td><code>{ threads: ThreadSummary[] }</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/api/agent/threads/:threadId</code></td>
+        <td>✅</td>
+        <td>UUID in path</td>
+        <td><code>{ threadId, messages: ThreadMessage[] }</code></td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-orange">POST</span></td>
+        <td><code>/api/agent/chat</code></td>
+        <td>✅</td>
+        <td><code>{ message: string (1-5000), threadId: UUID }</code></td>
+        <td>SSE stream of <code>AgentEvent</code> objects</td>
+      </tr>
+    </table>
+
+    <h4>SSE Event Schema (POST /api/agent/chat)</h4>
+    <table>
+      <tr><th>Event type</th><th>Payload fields</th><th>When emitted</th></tr>
+      <tr><td><code>started</code></td><td><code>message: "Agent is planning"</code></td><td>Immediately after agent creation</td></tr>
+      <tr><td><code>progress</code></td><td><code>message: "Running {toolName}"</code></td><td>Before each tool call</td></tr>
+      <tr><td><code>token</code></td><td><code>token: string</code></td><td>Each text delta from the LLM</td></tr>
+      <tr><td><code>completed</code></td><td><code>message: "done"</code></td><td>After all streaming is done</td></tr>
+      <tr><td><code>error</code></td><td><code>message: string</code></td><td>On any thrown error</td></tr>
+    </table>
+
+    <h4>Health Check</h4>
+    <table>
+      <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+      <tr>
+        <td><span class="badge badge-green">GET</span></td>
+        <td><code>/health</code></td>
+        <td>Returns service status and DB connectivity: <code>{ status, service, database }</code></td>
+      </tr>
+    </table>
+
+    <h3>3.5 AI Agent Architecture</h3>
+
+    <div class="callout info">
+      <div class="callout-icon">🤖</div>
+      <div class="callout-body">
+        <div class="callout-title">Agent System Design</div>
+        The Mastra agent uses a <strong>ReAct-style</strong> (Reason + Act) loop. The LLM reads
+        the system prompt, current conversation thread, and available tools. It then decides whether
+        to call a tool (action) or reply with text. Tool results are fed back into the conversation
+        context, enabling multi-step reasoning.
+      </div>
+    </div>
+
+    <h4>Agent Configuration</h4>
+    <ul>
+      <li><strong>Model:</strong> <code>openai/gpt-4o-mini</code> (configurable via <code>AI_MODEL</code> env)</li>
+      <li><strong>ID:</strong> <code>"meeting-assistant"</code></li>
+      <li><strong>Memory scope:</strong> Per <code>resourceId</code> (= <code>authUserId</code>), meaning each user has isolated memory</li>
+      <li><strong>Thread isolation:</strong> Per <code>threadId</code> (UUID), multiple threads per user</li>
+      <li><strong>Last N messages:</strong> 20 messages recalled per request to keep context window manageable</li>
+    </ul>
+
+    <h4>Agent Instructions (System Prompt)</h4>
+    <p>The system prompt defines the agent's personality and behavioral rules. Key rules include:</p>
+    <ul>
+      <li><strong>Memory usage:</strong> Update working memory when the user states preferences. Use thread history before re-fetching.</li>
+      <li><strong>Time handling:</strong> "Any time" defaults to tomorrow 10:00 AM local time. Relative times converted to ISO-8601 using injected current time.</li>
+      <li><strong>Response format rules:</strong> Different response templates for listing vs. detail vs. action confirmation. Avoids filler phrases. Never invents data not in tool results.</li>
+      <li><strong>Markdown:</strong> UI renders markdown — uses bullet lists, bold labels, and <code>[View meeting](url)</code> style links.</li>
+    </ul>
+
+    <h4>Working Memory Template</h4>
+    <pre><code class="str"># Meeting preferences
+- Timezone:
+- Default meeting length (minutes):
+- Preferred meeting hours:
+- Usual invitees:
+- Notes:</code></pre>
+    <p>This template is populated as the agent learns user preferences from the conversation. It persists across all threads for a user.</p>
+
+    <h3>3.6 MCP Server</h3>
+    <p>
+      The app optionally exposes a <strong>Model Context Protocol (MCP)</strong> endpoint, allowing
+      AI-powered IDEs (like Cursor) to use the calendar tools directly.
+    </p>
+    <ul>
+      <li><strong>Endpoint:</strong> <code>POST /mcp</code></li>
+      <li><strong>Auth:</strong> Descope-verified JWT (via <code>DescopeMcpProvider</code>)</li>
+      <li><strong>Available tools:</strong> <code>listUpcomingMeetings</code> (with <code>maxResults</code> and <code>todayOnly</code> params)</li>
+      <li><strong>Auth scopes required:</strong> <code>profile</code></li>
+      <li><strong>Token extraction:</strong> Decodes JWT payload from <code>extra.authInfo.token</code> to get <code>sub</code> (authUserId)</li>
+      <li><strong>Response format:</strong> MCP text content: <code>{ content: [{ type: 'text', text: JSON.stringify(meetings) }] }</code></li>
+      <li><strong>GET /mcp:</strong> Returns 405 Method Not Allowed (Cursor probes this endpoint)</li>
+    </ul>
+
+    <h3>3.7 Authentication Middleware</h3>
+    <p>The <code>requireSession</code> middleware runs on all <code>/api/connections</code> and <code>/api/agent</code> routes:</p>
+
+    <pre><code><span class="cm">// 1. Extract Bearer token from Authorization header</span>
+<span class="kw">const</span> token = header?.startsWith(<span class="str">"Bearer "</span>) ? header.slice(7) : <span class="kw">null</span>;
+
+<span class="cm">// 2. Validate with Descope</span>
+<span class="kw">const</span> authInfo = <span class="kw">await</span> descopeClient.validateSession(token);
+
+<span class="cm">// 3. Extract authUserId from JWT claims (sub)</span>
+<span class="kw">const</span> authUserId = String(claims.sub);
+
+<span class="cm">// 4. Upsert user in PostgreSQL</span>
+<span class="kw">const</span> user = <span class="kw">await</span> ensureUser({ authUserId, email });
+
+<span class="cm">// 5. Attach auth context to req.auth</span>
+req.auth = { authUserId, email, name, userId: user.id, token: claims };</code></pre>
+
+    <p>The middleware exposes two user identifiers downstream:</p>
+    <ul>
+      <li><code>req.auth.authUserId</code> — Descope's user ID (used for memory scoping, token retrieval)</li>
+      <li><code>req.auth.userId</code> — Internal PostgreSQL UUID (used for connection table lookups)</li>
+    </ul>
+
+    <h3>3.8 Frontend Architecture</h3>
+    <p>The frontend is a <strong>Next.js 16 App Router</strong> application with client components for interactive features.</p>
+
+    <h4>Pages &amp; Routing</h4>
+    <table>
+      <tr><th>Route</th><th>Component</th><th>Access</th><th>Description</th></tr>
+      <tr><td><code>/</code></td><td>page.tsx (Home)</td><td>Public</td><td>Landing page (Next.js template — not yet customized)</td></tr>
+      <tr><td><code>/sign-in</code></td><td>sign-in page + RedirectIfAuthenticated</td><td>Public</td><td>Descope-powered sign-in UI. Redirects to /dashboard if already logged in.</td></tr>
+      <tr><td><code>/dashboard</code></td><td>DashboardPage</td><td>Protected</td><td>Main app: ChatPanel (full width) + ConnectionPanel in sidebar + logout</td></tr>
+    </table>
+
+    <h4>Root Layout (<code>layout.tsx</code>)</h4>
+    <ul>
+      <li>Wraps entire app in <code>&lt;AuthProvider&gt;</code> from <code>@descope/nextjs-sdk</code> for global session state</li>
+      <li>Loads Google Fonts: <strong>Plus Jakarta Sans</strong> (body) and <strong>Source Serif 4</strong> (headings)</li>
+      <li>Stores session and refresh tokens in cookies (<code>sameSite: 'Lax'</code>, <code>secure: true</code> in production)</li>
+    </ul>
+
+    <h3>3.9 Frontend Components</h3>
+
+    <h4>ChatPanel (<code>chat-panel.tsx</code>) — ~500 lines</h4>
+    <p>The primary UI component. Manages all chat state and renders both the sidebar and main chat column.</p>
+
+    <p><strong>State:</strong></p>
+    <ul>
+      <li><code>threadId</code> — Current thread UUID (new UUID on "New Chat")</li>
+      <li><code>messages</code> — Array of <code>{ id, role, content }</code> messages</li>
+      <li><code>threads</code> — List of thread summaries from backend</li>
+      <li><code>prompt</code> — Current textarea input value</li>
+      <li><code>running</code> — Boolean: SSE stream in progress</li>
+      <li><code>loadingThread</code> — Boolean: loading a past thread</li>
+      <li><code>progress</code> — Current tool-call status string (shown while agent runs tools)</li>
+    </ul>
+
+    <p><strong>Key behaviors:</strong></p>
+    <ul>
+      <li><strong>Optimistic UI:</strong> User message and empty assistant bubble added immediately, then filled with streaming tokens</li>
+      <li><strong>SSE streaming:</strong> Uses <code>streamAgentChat()</code> which reads the SSE stream byte-by-byte, splits on <code>\n\n</code>, parses <code>data:</code> lines as JSON events</li>
+      <li><strong>Thread switching:</strong> <code>resumeThread()</code> loads messages from backend and swaps the current view</li>
+      <li><strong>Suggestion chips:</strong> Shown on empty state — clicking sends the suggestion immediately</li>
+      <li><strong>Keyboard:</strong> <code>Enter</code> submits, <code>Shift+Enter</code> adds newline in textarea</li>
+    </ul>
+
+    <h4>ConnectionPanel (<code>connection-panel.tsx</code>)</h4>
+    <ul>
+      <li>Shows current Google Calendar connection status (connected/pending/disconnected) with a colored indicator</li>
+      <li><strong>Connect:</strong> Calls <code>connectCalendar()</code> → fetches Descope refresh token → sends to backend → backend returns OAuth URL → redirects user</li>
+      <li><strong>Refresh:</strong> Calls <code>refreshCalendarConnection()</code> → backend checks Descope for valid token → updates DB status → re-fetches to update UI</li>
+      <li>Shows a skeleton loader while initially fetching connection status</li>
+    </ul>
+
+    <h4>MarkdownMessage (<code>markdown-message.tsx</code>)</h4>
+    <p>Renders assistant messages as Markdown using <code>react-markdown</code> with <code>remark-gfm</code> (GitHub Flavored Markdown for tables, lists, etc.). User messages are rendered as plain <code>&lt;p&gt;</code> tags with <code>whitespace-pre-wrap</code>.</p>
+
+    <h3>3.10 Frontend State &amp; Data Flow</h3>
+
+    <h4>apiFetch() utility (<code>lib/api.ts</code>)</h4>
+    <p>Generic fetch wrapper that:</p>
+    <ul>
+      <li>Prepends <code>NEXT_PUBLIC_API_URL</code> (defaults to <code>http://localhost:4000</code>) to all paths</li>
+      <li>Adds <code>Authorization: Bearer {token}</code> header if token is provided</li>
+      <li>Sets <code>Content-Type: application/json</code> and serializes body</li>
+      <li>Throws with <code>data.error</code> message on non-OK responses</li>
+    </ul>
+
+    <h4>streamAgentChat() (<code>lib/agent.ts</code>)</h4>
+    <p>Custom SSE reader that:</p>
+    <ol>
+      <li>Opens a <code>fetch()</code> POST with <code>Accept: text/event-stream</code></li>
+      <li>Uses a <code>ReadableStream.getReader()</code> to read bytes</li>
+      <li>Maintains a buffer, splits on <code>\n\n</code> blocks</li>
+      <li>For each block, finds lines starting with <code>"data:"</code> and JSON-parses them</li>
+      <li>Calls the <code>onEvent</code> callback for each parsed event</li>
+    </ol>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 4 — API REFERENCE (FULL)
+       ══════════════════════════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>API Reference</h2>
+    </div>
+
+    <h3>GET /health</h3>
+    <pre><code><span class="cm">// Response 200</span>
+{ <span class="str">"status"</span>: <span class="str">"ok"</span>, <span class="str">"service"</span>: <span class="str">"agentic-calendar-app"</span>, <span class="str">"database"</span>: <span class="str">"up"</span> }
+
+<span class="cm">// Response 503 (DB down)</span>
+{ <span class="str">"status"</span>: <span class="str">"error"</span>, <span class="str">"service"</span>: <span class="str">"agentic-calendar-app"</span>, <span class="str">"database"</span>: <span class="str">"down"</span> }</code></pre>
+
+    <h3>GET /api/connections</h3>
+    <pre><code><span class="cm">// Headers: Authorization: Bearer {jwt}</span>
+<span class="cm">// Response 200</span>
+{
+  <span class="str">"connection"</span>: {
+    <span class="str">"label"</span>: <span class="str">"Google Calendar"</span>,
+    <span class="str">"status"</span>: <span class="str">"connected"</span>  <span class="cm">// "connected" | "disconnected" | "pending"</span>
+  }
+}</code></pre>
+
+    <h3>POST /api/connections/connect</h3>
+    <pre><code><span class="cm">// Body</span>
+{ <span class="str">"refreshToken"</span>: <span class="str">"&lt;descope_refresh_token&gt;"</span>, <span class="str">"redirectUrl"</span>: <span class="str">"http://localhost:3000/dashboard"</span> }
+
+<span class="cm">// Response 200</span>
+{ <span class="str">"url"</span>: <span class="str">"https://accounts.google.com/o/oauth2/auth?..."</span> }</code></pre>
+
+    <h3>POST /api/connections/refresh-status</h3>
+    <pre><code><span class="cm">// No body needed</span>
+<span class="cm">// Response 200</span>
+{ <span class="str">"connection"</span>: { <span class="str">"label"</span>: <span class="str">"Google Calendar"</span>, <span class="str">"status"</span>: <span class="str">"connected"</span> } }</code></pre>
+
+    <h3>GET /api/agent/threads</h3>
+    <pre><code><span class="cm">// Response 200</span>
+{
+  <span class="str">"threads"</span>: [
+    { <span class="str">"id"</span>: <span class="str">"uuid"</span>, <span class="str">"title"</span>: <span class="str">"What's on today?"</span>, <span class="str">"updatedAt"</span>: <span class="str">"2026-09-01T03:37:00Z"</span> }
+  ]
+}</code></pre>
+
+    <h3>GET /api/agent/threads/:threadId</h3>
+    <pre><code><span class="cm">// Response 200</span>
+{
+  <span class="str">"threadId"</span>: <span class="str">"uuid"</span>,
+  <span class="str">"messages"</span>: [
+    { <span class="str">"id"</span>: <span class="str">"uuid"</span>, <span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"What's on today?"</span> },
+    { <span class="str">"id"</span>: <span class="str">"uuid"</span>, <span class="str">"role"</span>: <span class="str">"assistant"</span>, <span class="str">"content"</span>: <span class="str">"You have 2 meetings..."</span> }
+  ]
+}</code></pre>
+
+    <h3>POST /api/agent/chat (SSE Stream)</h3>
+    <pre><code><span class="cm">// Request</span>
+{
+  <span class="str">"message"</span>: <span class="str">"Create a standup tomorrow at 9am for 30 minutes"</span>,
+  <span class="str">"threadId"</span>: <span class="str">"&lt;uuid&gt;"</span>
+}
+
+<span class="cm">// Response — text/event-stream</span>
+data: {<span class="str">"type"</span>:<span class="str">"started"</span>,<span class="str">"message"</span>:<span class="str">"Agent is planning"</span>}
+
+data: {<span class="str">"type"</span>:<span class="str">"progress"</span>,<span class="str">"message"</span>:<span class="str">"Running createMeeting"</span>}
+
+data: {<span class="str">"type"</span>:<span class="str">"token"</span>,<span class="str">"token"</span>:<span class="str">"Done! I've created"</span>}
+
+data: {<span class="str">"type"</span>:<span class="str">"token"</span>,<span class="str">"token"</span>:<span class="str">" your standup..."</span>}
+
+data: {<span class="str">"type"</span>:<span class="str">"completed"</span>,<span class="str">"message"</span>:<span class="str">"done"</span>}</code></pre>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 5 — ENVIRONMENT CONFIG
+       ══════════════════════════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>Environment Configuration</h2>
+    </div>
+
+    <h3>Backend (.env)</h3>
+    <table>
+      <tr><th>Variable</th><th>Default</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>PORT</code></td><td>4000</td><td>No</td><td>Express server port</td></tr>
+      <tr><td><code>DATABASE_URL</code></td><td>—</td><td>✅ Yes</td><td>PostgreSQL connection string</td></tr>
+      <tr><td><code>APP_URL</code></td><td>http://localhost:3000</td><td>No</td><td>Frontend URL for CORS and OAuth redirect fallback</td></tr>
+      <tr><td><code>DESCOPE_PROJECT_ID</code></td><td>—</td><td>✅ Yes</td><td>Descope project identifier</td></tr>
+      <tr><td><code>DESCOPE_MANAGEMENT_KEY</code></td><td>—</td><td>✅ Yes</td><td>Descope management API key (for outbound token fetch)</td></tr>
+      <tr><td><code>DESCOPE_CALENDAR_CONNECTION_ID</code></td><td>google-calendar</td><td>No</td><td>Descope outbound app ID for Google Calendar</td></tr>
+      <tr><td><code>OPENAI_API_KEY</code></td><td>—</td><td>✅ Yes</td><td>OpenAI API key for LLM inference</td></tr>
+      <tr><td><code>GOOGLE_GEMINI_API_KEY</code></td><td>—</td><td>No</td><td>Alternative Gemini API key (future use)</td></tr>
+      <tr><td><code>AI_MODEL</code></td><td>gpt-4o-mini</td><td>No</td><td>OpenAI model to use (e.g. gpt-4o)</td></tr>
+      <tr><td><code>SERVER_URL</code></td><td>—</td><td>MCP only</td><td>Public URL of this server (for MCP server URL)</td></tr>
+      <tr><td><code>DESCOPE_MCP_SERVER_WELL_KNOWN_URL</code></td><td>—</td><td>MCP only</td><td>Descope MCP well-known URL; if absent, MCP is disabled</td></tr>
+    </table>
+
+    <h3>Frontend (.env)</h3>
+    <table>
+      <tr><th>Variable</th><th>Default</th><th>Required</th><th>Description</th></tr>
+      <tr><td><code>NEXT_PUBLIC_DESCOPE_PROJECT_ID</code></td><td>—</td><td>✅ Yes</td><td>Descope project ID for frontend auth SDK</td></tr>
+      <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td>http://localhost:4000</td><td>No</td><td>Backend API base URL</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 6 — DATA MODELS
+       ══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>Data Models</h2>
+    </div>
+
+    <h4>ThreadSummary</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">ThreadSummary</span> = {
+  id: <span class="kw">string</span>;        <span class="cm">// UUID</span>
+  title: <span class="kw">string</span>;     <span class="cm">// First 80 chars of user's first message, or "Untitled Chat"</span>
+  updatedAt: <span class="kw">string</span>; <span class="cm">// ISO-8601</span>
+};</code></pre>
+
+    <h4>ThreadMessage</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">ThreadMessage</span> = {
+  id: <span class="kw">string</span>;
+  role: <span class="str">"user"</span> | <span class="str">"assistant"</span> | <span class="str">"system"</span>;
+  content: <span class="kw">string</span>; <span class="cm">// normalized to plain string</span>
+};</code></pre>
+
+    <h4>AgentEvent (SSE)</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">AgentEvent</span> = {
+  type: <span class="str">"started"</span> | <span class="str">"progress"</span> | <span class="str">"token"</span> | <span class="str">"completed"</span> | <span class="str">"error"</span>;
+  message?: <span class="kw">string</span>;  <span class="cm">// for started, progress, completed, error</span>
+  token?: <span class="kw">string</span>;    <span class="cm">// for token events</span>
+};</code></pre>
+
+    <h4>CalendarEvent (tool return)</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">CalendarEvent</span> = {
+  id: <span class="kw">string</span> | <span class="kw">null</span>;
+  title: <span class="kw">string</span>;
+  description: <span class="kw">string</span> | <span class="kw">null</span>;
+  location: <span class="kw">string</span> | <span class="kw">null</span>;
+  start: <span class="kw">string</span> | <span class="kw">null</span>;       <span class="cm">// ISO-8601</span>
+  end: <span class="kw">string</span> | <span class="kw">null</span>;         <span class="cm">// ISO-8601</span>
+  htmlLink: <span class="kw">string</span> | <span class="kw">null</span>;    <span class="cm">// Google Calendar URL</span>
+  meetLink: <span class="kw">string</span> | <span class="kw">null</span>;    <span class="cm">// Google Meet URL</span>
+  attendees: <span class="kw">string</span>[];        <span class="cm">// email or displayName</span>
+};</code></pre>
+
+    <h4>ConnectionInfo</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">ConnectionInfo</span> = {
+  label: <span class="kw">string</span>;  <span class="cm">// "Google Calendar"</span>
+  status: <span class="str">"connected"</span> | <span class="str">"disconnected"</span> | <span class="str">"pending"</span>;
+};</code></pre>
+
+    <h4>AuthContext (req.auth)</h4>
+    <pre><code><span class="kw">type</span> <span class="cls">AuthContext</span> = {
+  authUserId: <span class="kw">string</span>;           <span class="cm">// Descope user ID (JWT sub)</span>
+  email?: <span class="kw">string</span>;
+  name?: <span class="kw">string</span>;
+  userId: <span class="kw">string</span>;              <span class="cm">// PostgreSQL UUID</span>
+  token: Record&lt;<span class="kw">string</span>, <span class="kw">unknown</span>&gt;; <span class="cm">// Full JWT claims</span>
+};</code></pre>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 7 — SECURITY DESIGN
+       ══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>Security Design</h2>
+    </div>
+
+    <table>
+      <tr><th>Concern</th><th>Approach</th></tr>
+      <tr>
+        <td><strong>Authentication</strong></td>
+        <td>All API routes protected by <code>requireSession</code>. JWT validated server-side with Descope SDK on every request. No client-side auth shortcuts.</td>
+      </tr>
+      <tr>
+        <td><strong>Authorization</strong></td>
+        <td>Thread ownership validated: <code>thread.resourceId !== authUserId</code> check prevents cross-user thread access. Calendar operations always scoped to the authenticated user's Google token.</td>
+      </tr>
+      <tr>
+        <td><strong>OAuth Token Storage</strong></td>
+        <td>Google OAuth tokens <strong>never stored in the app's DB</strong>. Descope acts as the token broker — tokens are retrieved on-demand via management API and used transiently.</td>
+      </tr>
+      <tr>
+        <td><strong>CORS</strong></td>
+        <td>Backend CORS restricted to <code>APP_URL</code> (frontend origin). Credentials allowed for session cookies.</td>
+      </tr>
+      <tr>
+        <td><strong>Input Validation</strong></td>
+        <td>All request bodies validated with Zod schemas before processing. Message length capped at 5,000 chars. ThreadId validated as UUID format.</td>
+      </tr>
+      <tr>
+        <td><strong>SQL Injection</strong></td>
+        <td>All DB queries use parameterized queries (<code>$1, $2</code>) via <code>pg</code> pool. No raw string concatenation.</td>
+      </tr>
+      <tr>
+        <td><strong>Session Security</strong></td>
+        <td>Cookies set with <code>SameSite: Lax</code> and <code>Secure: true</code> in production.</td>
+      </tr>
+      <tr>
+        <td><strong>MCP Security</strong></td>
+        <td>MCP endpoint authenticated via Descope MCP Provider. Requires valid JWT with <code>profile</code> scope.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 8 — ERROR HANDLING
+       ══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>Error Handling Strategy</h2>
+    </div>
+
+    <h3>Backend</h3>
+    <ul>
+      <li><strong>401 Unauthorized:</strong> Missing token or expired session → <code>{ error: "Unauthorized" }</code> or <code>{ error: "session expired" }</code></li>
+      <li><strong>400 Bad Request:</strong> Zod validation failure → <code>{ error: "Invalid chat body" }</code></li>
+      <li><strong>500 Internal Server Error:</strong> Service-level exceptions → <code>{ error: message }</code></li>
+      <li><strong>SSE Error Event:</strong> For streaming route, errors are sent as <code>data: {"type":"error","message":"..."}</code> before closing the stream instead of HTTP error codes</li>
+      <li><strong>503 Service Unavailable:</strong> Health check DB failure</li>
+    </ul>
+
+    <h3>Frontend</h3>
+    <ul>
+      <li><strong>apiFetch errors:</strong> Non-2xx responses throw with <code>data.error</code> message</li>
+      <li><strong>SSE error events:</strong> Replaced into the assistant's message bubble (the empty placeholder becomes the error text)</li>
+      <li><strong>Thread load failure:</strong> Appends a system message "Could not load the chat" to the conversation</li>
+      <li><strong>Network failure:</strong> Appends system message "Could not reach the agent API"</li>
+      <li><strong>Connection failures:</strong> Silently logged (<code>console.log</code>) — UI shows stale state rather than crashing</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════
+       SECTION 9 — SETUP & RUNNING LOCALLY
+       ══════════════════════════════════ -->
+  <div class="section page-break">
+    <div class="section-header">
+      <div class="section-number">9</div>
+      <h2>Setup &amp; Running Locally</h2>
+    </div>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li>Node.js 20+ and npm</li>
+      <li>Docker Desktop (for PostgreSQL)</li>
+      <li>A <strong>Descope</strong> project with Google Calendar configured as an Outbound App</li>
+      <li>An <strong>OpenAI</strong> API key</li>
+    </ul>
+
+    <h3>Step 1: Start PostgreSQL</h3>
+    <pre><code><span class="cm"># From the project root (agentic-calendar-assistant/)</span>
+docker compose up -d
+<span class="cm"># PostgreSQL available at localhost:5442</span></code></pre>
+
+    <h3>Step 2: Setup Backend</h3>
+    <pre><code><span class="kw">cd</span> backend
+
+<span class="cm"># Install dependencies</span>
+npm install
+
+<span class="cm"># Configure environment (fill in Descope + OpenAI keys)</span>
+cp .env.example .env  <span class="cm"># or edit .env directly</span>
+
+<span class="cm"># Run database migrations</span>
+npm run migrate
+
+<span class="cm"># Start development server (port 4000)</span>
+npm run dev</code></pre>
+
+    <h3>Step 3: Setup Frontend</h3>
+    <pre><code><span class="kw">cd</span> frontend
+
+<span class="cm"># Install dependencies</span>
+npm install
+
+<span class="cm"># Configure environment</span>
+<span class="cm"># Edit .env and set NEXT_PUBLIC_DESCOPE_PROJECT_ID</span>
+
+<span class="cm"># Start development server (port 3000)</span>
+npm run dev</code></pre>
+
+    <h3>Step 4: Connect Google Calendar</h3>
+    <ol>
+      <li>Open <code>http://localhost:3000</code> and sign in via Descope</li>
+      <li>Go to Dashboard → click <strong>Connect</strong> in the Connections panel</li>
+      <li>Complete the Google OAuth flow (Descope handles this)</li>
+      <li>Click <strong>Refresh</strong> in the Connections panel to confirm status shows "Connected"</li>
+      <li>Start chatting with your calendar!</li>
+    </ol>
+
+    <h3>Step 5: Optional — Run Database Migrations</h3>
+    <pre><code><span class="cm"># migration script reads all .sql files in backend/sql/ in order</span>
+npm run migrate  <span class="cm"># runs: tsx scripts/migrate.ts</span></code></pre>
+
+    <div class="callout success">
+      <div class="callout-icon">✅</div>
+      <div class="callout-body">
+        <div class="callout-title">Verify Setup</div>
+        Check <code>http://localhost:4000/health</code> — should return <code>{ "status": "ok", "database": "up" }</code>.
+        If database is "down", verify Docker is running and <code>DATABASE_URL</code> is correct.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       FOOTER
+       ══════════════════════════════════ -->
+  <div class="doc-footer">
+    <p><strong>Agentic Calendar Assistant</strong> — Technical Documentation v1.0</p>
+    <p>Generated: September 2026 &nbsp;|&nbsp; Stack: Next.js · Express · Mastra · Descope · Google Calendar API · OpenAI</p>
+  </div>
+
+</div>
+</body>
+</html>

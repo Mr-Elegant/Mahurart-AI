@@ -101,3 +101,15 @@ lerna-debug.log*
 # ==========================================
 .vercel
 .turbo
+
+# ==========================================
+# 📄 Personal Docs, Resumes & Interview Prep
+# ==========================================
+interview_guide.html
+*/interview_guide.html
+resume_updated.html
+*/resume_updated.html
+*.pdf
+*Resume*
+*Interview*
+

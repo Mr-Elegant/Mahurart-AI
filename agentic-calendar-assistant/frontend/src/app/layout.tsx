@@ -89,6 +89,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: "pZif0Dg_NsIuv1UGV70OSpLxcM1kif5EqM4ydtLh5Gg",
+  },
 };
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
@@ -138,6 +141,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         className={cn(sans.variable, heading.variable)}
       >
         <head>
+          <meta
+            name="google-site-verification"
+            content="pZif0Dg_NsIuv1UGV70OSpLxcM1kif5EqM4ydtLh5Gg"
+          />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
